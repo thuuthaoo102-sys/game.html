@@ -1,0 +1,829 @@
+```html
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Memory Challenge - 5 Levels</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .game-container {
+        width: 100%;
+        max-width: 900px;
+        background: white;
+        border-radius: 25px;
+        padding: 30px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+        text-align: center;
+    }
+
+    h1 {
+        color: #4c4c8c;
+        margin-bottom: 10px;
+    }
+
+    .subtitle {
+        color: #777;
+        margin-bottom: 20px;
+    }
+
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f3f4ff;
+        padding: 15px 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    .level {
+        color: #667eea;
+    }
+
+    .score {
+        color: #e67e22;
+    }
+
+    .timer {
+        font-size: 24px;
+        color: #e74c3c;
+        margin: 15px 0;
+        font-weight: bold;
+    }
+
+    .memory-area {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 15px;
+        margin: 25px 0;
+    }
+
+    .memory-card {
+        background: #f7f7ff;
+        border: 2px solid #667eea;
+        border-radius: 15px;
+        padding: 20px 10px;
+        font-size: 20px;
+        min-height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .emoji {
+        font-size: 40px;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    button {
+        border: none;
+        border-radius: 12px;
+        padding: 14px 30px;
+        font-size: 17px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    button:hover {
+        transform: translateY(-2px);
+    }
+
+    .start-btn {
+        background: #667eea;
+        color: white;
+    }
+
+    .submit-btn {
+        background: #27ae60;
+        color: white;
+        margin-top: 20px;
+    }
+
+    .next-btn {
+        background: #e67e22;
+        color: white;
+        margin-top: 20px;
+    }
+
+    .restart-btn {
+        background: #667eea;
+        color: white;
+        margin-top: 20px;
+    }
+
+    .question-area {
+        margin-top: 20px;
+    }
+
+    .question {
+        font-size: 21px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .options {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .option {
+        background: #f0f0ff;
+        border: 2px solid #ddd;
+        color: #333;
+    }
+
+    .option:hover {
+        border-color: #667eea;
+        background: #e8e9ff;
+    }
+
+    .option.selected {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .result {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .correct {
+        color: #27ae60;
+    }
+
+    .wrong {
+        color: #e74c3c;
+    }
+
+    .progress-container {
+        width: 100%;
+        background: #eee;
+        border-radius: 20px;
+        height: 12px;
+        margin: 15px 0 25px;
+        overflow: hidden;
+    }
+
+    .progress {
+        height: 100%;
+        width: 0%;
+        background: #667eea;
+        transition: width 0.3s;
+    }
+
+    .instructions {
+        background: #fff8e8;
+        border-left: 5px solid #f1c40f;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        color: #555;
+    }
+
+    .final-score {
+        font-size: 28px;
+        color: #667eea;
+        margin: 20px 0;
+        font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+        .game-container {
+            padding: 20px;
+        }
+
+        .options {
+            grid-template-columns: 1fr;
+        }
+
+        .top-bar {
+            font-size: 14px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="game-container">
+
+    <h1>🧠 Memory Challenge</h1>
+
+    <p class="subtitle">
+        How Much Can You Remember?
+    </p>
+
+    <div class="top-bar">
+        <div class="level">
+            Level: <span id="levelNumber">1</span>/5
+        </div>
+
+        <div class="score">
+            Score: <span id="score">0</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress" id="progress"></div>
+    </div>
+
+    <div class="instructions">
+        💡 Nhấn <b>BẮT ĐẦU</b> để bắt đầu thời gian ghi nhớ.
+        Hãy cố gắng ghi nhớ tất cả các từ/hình ảnh xuất hiện!
+    </div>
+
+    <div class="timer" id="timer">
+        Ready?
+    </div>
+
+    <!-- MEMORY AREA -->
+    <div class="memory-area" id="memoryArea"></div>
+
+    <!-- START BUTTON -->
+    <button class="start-btn" id="startButton" onclick="startLevel()">
+        ▶ BẮT ĐẦU
+    </button>
+
+    <!-- QUESTION AREA -->
+    <div class="question-area hidden" id="questionArea">
+
+        <div class="question" id="questionText"></div>
+
+        <div class="options" id="options"></div>
+
+        <button class="submit-btn" onclick="checkAnswer()">
+            ✅ TRẢ LỜI
+        </button>
+
+        <div class="result" id="result"></div>
+
+        <button class="next-btn hidden" id="nextButton" onclick="nextLevel()">
+            ➡ LEVEL TIẾP THEO
+        </button>
+
+    </div>
+
+    <!-- FINAL SCREEN -->
+    <div class="hidden" id="finalScreen">
+
+        <h2>🎉 Congratulations!</h2>
+
+        <p style="margin-top:15px;">
+            Bạn đã hoàn thành cả 5 level!
+        </p>
+
+        <div class="final-score">
+            Điểm của bạn: <span id="finalScore">0</span>/5
+        </div>
+
+        <button class="restart-btn" onclick="restartGame()">
+            🔄 CHƠI LẠI
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ==========================================
+   GAME DATA
+========================================== */
+
+const levels = [
+
+    {
+        time: 20,
+
+        items: [
+            ["🍎", "Apple"],
+            ["🐱", "Cat"],
+            ["🚗", "Car"],
+            ["🍕", "Pizza"],
+            ["🌳", "Tree"],
+            ["⚽", "Ball"],
+            ["📚", "Book"],
+            ["🐶", "Dog"],
+            ["☀️", "Sun"],
+            ["🎸", "Guitar"]
+        ],
+
+        question: "Which item appeared in the memory list?",
+
+        options: [
+            "🍎 Apple",
+            "🐘 Elephant",
+            "🍔 Burger",
+            "✈️ Plane"
+        ],
+
+        answer: "🍎 Apple"
+    },
+
+
+    {
+        time: 18,
+
+        items: [
+            ["🍌", "Banana"],
+            ["🐼", "Panda"],
+            ["🚲", "Bike"],
+            ["🎈", "Balloon"],
+            ["🌸", "Flower"],
+            ["📱", "Phone"],
+            ["🍩", "Donut"],
+            ["🐸", "Frog"],
+            ["⭐", "Star"],
+            ["🎧", "Headphones"]
+        ],
+
+        question: "Which item appeared in Level 2?",
+
+        options: [
+            "🐼 Panda",
+            "🦁 Lion",
+            "🍉 Watermelon",
+            "🚁 Helicopter"
+        ],
+
+        answer: "🐼 Panda"
+    },
+
+
+    {
+        time: 15,
+
+        items: [
+            ["🍓", "Strawberry"],
+            ["🐯", "Tiger"],
+            ["🏀", "Basketball"],
+            ["🚀", "Rocket"],
+            ["🌈", "Rainbow"],
+            ["💻", "Laptop"],
+            ["🍔", "Burger"],
+            ["🐢", "Turtle"],
+            ["🌙", "Moon"],
+            ["🎹", "Piano"],
+            ["☕", "Coffee"],
+            ["📷", "Camera"]
+        ],
+
+        question: "Which item appeared in Level 3?",
+
+        options: [
+            "🚀 Rocket",
+            "🚢 Ship",
+            "🥕 Carrot",
+            "🦊 Fox"
+        ],
+
+        answer: "🚀 Rocket"
+    },
+
+
+    {
+        time: 12,
+
+        items: [
+            ["🍇", "Grapes"],
+            ["🦁", "Lion"],
+            ["🏠", "House"],
+            ["✈️", "Plane"],
+            ["🌻", "Sunflower"],
+            ["⌚", "Watch"],
+            ["🍰", "Cake"],
+            ["🐨", "Koala"],
+            ["🌊", "Ocean"],
+            ["🎤", "Microphone"],
+            ["🎁", "Gift"],
+            ["🚲", "Bicycle"],
+            ["📖", "Notebook"],
+            ["🌟", "Star"]
+        ],
+
+        question: "Which item appeared in Level 4?",
+
+        options: [
+            "🌻 Sunflower",
+            "🐳 Whale",
+            "🍉 Watermelon",
+            "🏍️ Motorcycle"
+        ],
+
+        answer: "🌻 Sunflower"
+    },
+
+
+    {
+        time: 10,
+
+        items: [
+            ["🍉", "Watermelon"],
+            ["🐨", "Koala"],
+            ["🚁", "Helicopter"],
+            ["🎯", "Target"],
+            ["🌍", "Earth"],
+            ["💡", "Light Bulb"],
+            ["🍿", "Popcorn"],
+            ["🦋", "Butterfly"],
+            ["🎨", "Palette"],
+            ["🏆", "Trophy"],
+            ["🎵", "Music"],
+            ["📚", "Books"],
+            ["💎", "Diamond"],
+            ["🔑", "Key"],
+            ["🧩", "Puzzle"]
+        ],
+
+        question: "Which item appeared in Level 5?",
+
+        options: [
+            "🧩 Puzzle",
+            "🐘 Elephant",
+            "🍔 Hamburger",
+            "🚂 Train"
+        ],
+
+        answer: "🧩 Puzzle"
+    }
+
+];
+
+
+/* ==========================================
+   GAME VARIABLES
+========================================== */
+
+let currentLevel = 0;
+let score = 0;
+let selectedAnswer = null;
+let countdown;
+let timeLeft;
+
+
+/* ==========================================
+   LOAD LEVEL
+========================================== */
+
+function loadLevel() {
+
+    clearInterval(countdown);
+
+    const level = levels[currentLevel];
+
+    document.getElementById("levelNumber").textContent =
+        currentLevel + 1;
+
+    document.getElementById("score").textContent =
+        score;
+
+    document.getElementById("timer").textContent =
+        "Ready?";
+
+    document.getElementById("memoryArea").innerHTML = "";
+
+    document.getElementById("questionArea")
+        .classList.add("hidden");
+
+    document.getElementById("finalScreen")
+        .classList.add("hidden");
+
+    document.getElementById("startButton")
+        .classList.remove("hidden");
+
+    document.getElementById("nextButton")
+        .classList.add("hidden");
+
+    document.getElementById("result").textContent = "";
+
+    selectedAnswer = null;
+
+    updateProgress();
+
+}
+
+
+/* ==========================================
+   START LEVEL
+========================================== */
+
+function startLevel() {
+
+    const level = levels[currentLevel];
+
+    document.getElementById("startButton")
+        .classList.add("hidden");
+
+    document.getElementById("questionArea")
+        .classList.add("hidden");
+
+    document.getElementById("memoryArea")
+        .classList.remove("hidden");
+
+    displayMemoryItems();
+
+    timeLeft = level.time;
+
+    document.getElementById("timer").textContent =
+        "⏱️ " + timeLeft + " giây";
+
+    countdown = setInterval(() => {
+
+        timeLeft--;
+
+        document.getElementById("timer").textContent =
+            "⏱️ " + timeLeft + " giây";
+
+        if (timeLeft <= 0) {
+
+            clearInterval(countdown);
+
+            hideMemory();
+
+        }
+
+    }, 1000);
+
+}
+
+
+/* ==========================================
+   DISPLAY MEMORY ITEMS
+========================================== */
+
+function displayMemoryItems() {
+
+    const area = document.getElementById("memoryArea");
+
+    area.innerHTML = "";
+
+    const items = levels[currentLevel].items;
+
+    items.forEach(item => {
+
+        const card = document.createElement("div");
+
+        card.className = "memory-card";
+
+        card.innerHTML = `
+            <div class="emoji">${item[0]}</div>
+            <div>${item[1]}</div>
+        `;
+
+        area.appendChild(card);
+
+    });
+
+}
+
+
+/* ==========================================
+   HIDE MEMORY
+========================================== */
+
+function hideMemory() {
+
+    document.getElementById("memoryArea")
+        .classList.add("hidden");
+
+    document.getElementById("timer").textContent =
+        "⏰ Hết giờ!";
+
+    showQuestion();
+
+}
+
+
+/* ==========================================
+   SHOW QUESTION
+========================================== */
+
+function showQuestion() {
+
+    const level = levels[currentLevel];
+
+    const questionArea =
+        document.getElementById("questionArea");
+
+    questionArea.classList.remove("hidden");
+
+    document.getElementById("questionText")
+        .textContent = level.question;
+
+    const options =
+        document.getElementById("options");
+
+    options.innerHTML = "";
+
+    level.options.forEach(option => {
+
+        const button =
+            document.createElement("button");
+
+        button.className = "option";
+
+        button.textContent = option;
+
+        button.onclick = function() {
+
+            document.querySelectorAll(".option")
+                .forEach(btn =>
+                    btn.classList.remove("selected")
+                );
+
+            button.classList.add("selected");
+
+            selectedAnswer = option;
+
+        };
+
+        options.appendChild(button);
+
+    });
+
+}
+
+
+/* ==========================================
+   CHECK ANSWER
+========================================== */
+
+function checkAnswer() {
+
+    if (!selectedAnswer) {
+
+        document.getElementById("result").textContent =
+            "⚠️ Hãy chọn một đáp án!";
+
+        document.getElementById("result")
+            .className = "result wrong";
+
+        return;
+
+    }
+
+    const level = levels[currentLevel];
+
+    const result =
+        document.getElementById("result");
+
+    if (selectedAnswer === level.answer) {
+
+        score++;
+
+        result.textContent =
+            "🎉 Chính xác! +1 điểm";
+
+        result.className =
+            "result correct";
+
+    } else {
+
+        result.textContent =
+            "❌ Chưa chính xác! Đáp án đúng là: "
+            + level.answer;
+
+        result.className =
+            "result wrong";
+
+    }
+
+    document.getElementById("score")
+        .textContent = score;
+
+    document.querySelector(".submit-btn")
+        .disabled = true;
+
+    document.getElementById("nextButton")
+        .classList.remove("hidden");
+
+}
+
+
+/* ==========================================
+   NEXT LEVEL
+========================================== */
+
+function nextLevel() {
+
+    currentLevel++;
+
+    document.querySelector(".submit-btn")
+        .disabled = false;
+
+    if (currentLevel >= levels.length) {
+
+        showFinalScreen();
+
+    } else {
+
+        loadLevel();
+
+    }
+
+}
+
+
+/* ==========================================
+   FINAL SCREEN
+========================================== */
+
+function showFinalScreen() {
+
+    document.getElementById("memoryArea")
+        .classList.add("hidden");
+
+    document.getElementById("questionArea")
+        .classList.add("hidden");
+
+    document.getElementById("startButton")
+        .classList.add("hidden");
+
+    document.getElementById("finalScreen")
+        .classList.remove("hidden");
+
+    document.getElementById("finalScore")
+        .textContent = score;
+
+    document.getElementById("timer")
+        .textContent = "🏆 Completed!";
+
+}
+
+
+/* ==========================================
+   RESTART GAME
+========================================== */
+
+function restartGame() {
+
+    clearInterval(countdown);
+
+    currentLevel = 0;
+
+    score = 0;
+
+    document.querySelector(".submit-btn")
+        .disabled = false;
+
+    loadLevel();
+
+}
+
+
+/* ==========================================
+   PROGRESS BAR
+========================================== */
+
+function updateProgress() {
+
+    const percentage =
+        (currentLevel / levels.length) * 100;
+
+    document.getElementById("progress")
+        .style.width = percentage + "%";
+
+}
+
+
+/* ==========================================
+   START
+========================================== */
+
+loadLevel();
+
+</script>
+
+</body>
+</html>
+```
